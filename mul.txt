@@ -1,0 +1,9 @@
+ví dụ phép nhân:
+B[0] = 1 ⇒ result += A << 0 = 5
+B[1] = 1 ⇒ result += A << 1 = 10
+→ result = 5 + 10 = 15
+
+2^n + 2^n-1 ... khi shift 1 bit sẽ là 2^n+1 + 2^n ... là 2.(2^n + 2^n-1) nhân 2 lên
+
+việc cộng giống như số thập phân:
+23 . 4 = 20 . 4 + 3 . 4
