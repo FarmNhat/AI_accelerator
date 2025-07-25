@@ -18,8 +18,12 @@ module controller(
     input  wire [5:0] sel_filter_addr,     // Select filter address to start compute
     input  wire [3:0] sel_ifmap_addr,      // Select ifmap address to start compute
 
+    input  wire [3:0] psum_sel,         //Select psum address to start compute
+
     input  wire [7:0] ifmap,         
     input  wire [7:0] filter,
+
+    input wire [7:0] psum_in, // Input from other pe
 
     output reg  [7:0]  psum_out // Output from parsum_spad
 );
@@ -53,9 +57,9 @@ module controller(
         .clk(clk),
         .rst(rst),
         .en(en),
-        .a(a),
-        .b(b),
-        .add(add_out)
+        .a(parsum_out), // Output from parsum_spad
+        .b(mult_out), // Output from multiplier
+        .add(psum_out) // Output from adder
     );
 
     mult u_mult (
@@ -85,12 +89,17 @@ module controller(
         .data_out(data_out_filter)
     );
 
+    /////////////////
+    wire [7:0] parsum_out; //need fix
+    
+    // FIFO implementation
     parsum_spad u_parsum_spad (
         .clk(clk),
         .rd(en),
-        .wr(load_ifmap),
-        .addr(6'b000000), // Example address
-        .data_in(add_out),// Example data input from adder output
+        .wr(1'b1), // Write enable signal
+        //.addr_in(6'b000000), // Example address
+        .addr_out(psum_sel), // Example address for output
+        .data_in(psum_out),// Example data input from adder output
         .data_out(parsum_out)
 )
 endmodule
