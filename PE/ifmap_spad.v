@@ -12,7 +12,7 @@ module ifmap_spad (
     always @(posedge clk) begin
         if (wr)
             mem[addr] <= data_in;         // Reset output to zero
-        else if (rd)
+        if (rd)
             data_out <= mem[addr];       // Load new data when enabled
     end
 endmodule

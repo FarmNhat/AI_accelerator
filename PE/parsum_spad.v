@@ -14,10 +14,10 @@ module parsum_spad (
         if(rst)
             count <= 0;
             data_out <= 8'b00000000;                     // Reset count on reset signal
-        else if (wr)
+        if (wr)
             mem[count] <= data_in;         // Reset output to zero
             count <= count + 1;             // Increment count on write
-        else if (rd)
+        if (rd)
             data_out <= mem[addr_out];       // Load new data when enabled
     end
 endmodule
