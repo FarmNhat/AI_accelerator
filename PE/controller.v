@@ -23,9 +23,11 @@ module controller(
     input  wire [7:0] ifmap,         
     input  wire [7:0] filter,
 
+    input wire       en_psum_in, // Enable signal for psum_in
     input wire [7:0] psum_in, // Input from other pe
 
-    output reg  [7:0]  psum_out // Output from parsum_spad
+    input wire       en_psum_out, // Output from multiplier
+    output reg [7:0] psum_out // Output from parsum_spad
 );
 
     // does not support read load at the same time, after load all the data, start fetch
@@ -50,17 +52,19 @@ module controller(
         end
     end
 
-    reg [7:0] data_out_filter;
-    reg [7:0] data_out_ifmap;
+    wire [7:0] data_out_filter;
+    wire [7:0] data_out_ifmap;
 
     adder u_adder (
         .clk(clk),
         .rst(rst),
         .en(en),
-        .a(parsum_out), // Output from parsum_spad
+        .a(psum_pipe), // Output from parsum_spad
         .b(mult_out), // Output from multiplier
-        .add(psum_out) // Output from adder
+        .add(psum_temp_out) // Output from adder
     );
+
+    wire [7:0] mult_out; // Output from multiplier
 
     mult u_mult (
         .clk(clk),
@@ -90,16 +94,20 @@ module controller(
     );
 
     /////////////////
-    wire [7:0] parsum_out; //need fix
+    wire [7:0] psum_temp_out;
+    wire [7:0] psum_pipe; 
+    wire [7:0] in_adder_b;
+
+    assign psum_out = en_psum_out ? psum_temp_out : 8'h0; // Output or not.
+    assign in_adder_b = en_psum_in ? psum_in : mult_out; // Input to adder from other PE
     
-    // FIFO implementation
     parsum_spad u_parsum_spad (
         .clk(clk),
         .rd(en),
         .wr(1'b1), // Write enable signal
         //.addr_in(6'b000000), // Example address
         .addr_out(psum_sel), // Example address for output
-        .data_in(psum_out),// Example data input from adder output
-        .data_out(parsum_out)
+        .data_in(psum_temp_out),// Example data input from adder output
+        .data_out(psum_pipe)
 )
 endmodule
