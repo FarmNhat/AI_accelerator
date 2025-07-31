@@ -105,6 +105,7 @@ module controller(
         .clk(clk),
         .rd(en),
         .wr(1'b1), // Write enable signal
+        .rst(rst), // Synchronous reset
         //.addr_in(6'b000000), // Example address
         .addr_out(psum_sel), // Example address for output
         .data_in(psum_temp_out),// Example data input from adder output
