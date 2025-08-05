@@ -1,6 +1,7 @@
-module psum_accumulator (
+module psum_acc (
     input  wire        clk,
     input  wire        rst,
+    input  wire        en, // Enable signal (not used in this example)
     input  wire [15:0] psum_in,
     output reg  [15:0] accum_out
 );
@@ -10,7 +11,7 @@ module psum_accumulator (
     //reg full;
              
     always @(posedge clk) begin
-        if (rst) begin
+        if (rst || !en) begin
             psum_count <= 0;
             psum_buffer[0] <= 0;
             psum_buffer[1] <= 0;
