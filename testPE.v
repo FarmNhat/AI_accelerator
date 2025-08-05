@@ -1,116 +1,57 @@
-`timescale 1ps/1ps
-`include "PE.v"
+`timescale 1ps / 1ps
+`include "psum_acc.v"
+module tb_psum_accumulator;
 
-module tb_pe;
+    reg clk;
+    reg rst;
+    reg [15:0] psum_in;
+    wire [15:0] accum_out;
 
-    // Clock and reset
-    reg clk, rst;
-
-    // Control
-    reg en;
-
-    // Address
-    reg [3:0]  addr_ifmap;
-    reg [7:0]  addr_filter;
-    reg [4:0]  addr_psum;
-
-    // Write enables
-    reg wr_en_ifmap;
-    reg wr_en_filter;
-    reg wr_en_psum;
-
-    // Data inputs
-    reg [15:0] input_ifmap;
-    reg [15:0] input_filter;
-    reg [15:0] input_psum;
-
-    // Output
-    wire [15:0] output_psum;
-
-    // Clock generator: 10ns period
-    always #5 clk = ~clk;
-
-    // Instantiate DUT
-    pe dut (
+    // Instantiate the design under test (DUT)
+    psum_accumulator dut (
         .clk(clk),
         .rst(rst),
-        .en(en),
-
-        .addr_ifmap(addr_ifmap),
-        .addr_filter(addr_filter),
-        .addr_psum(addr_psum),
-
-        .wr_en_psum(wr_en_psum),
-        .input_psum(input_psum),
-
-        .wr_en_ifmap(wr_en_ifmap),
-        .input_ifmap(input_ifmap),
-
-        .wr_en_filter(wr_en_filter),
-        .input_filter(input_filter),
-
-        .output_psum(output_psum)
+        .psum_in(psum_in),
+        .accum_out(accum_out)
     );
 
+    // Clock generation: 10ns period
+    always #5 clk = ~clk;
+
     initial begin
+        // Initialize signals
         $dumpfile("testPE.vcd");
-        $dumpvars(0, tb_pe);
-        //$display("Simple IFMAP SPAD Testbench");
+        $dumpvars(0, tb_psum_accumulator);
 
         clk = 0;
         rst = 1;
-        en = 0;
+        psum_in = 0;
 
-        addr_ifmap = 0;
-        addr_filter = 0;
-        addr_psum = 0;
-
-        wr_en_ifmap = 0;
-        wr_en_filter = 0;
-        wr_en_psum = 0;
-
-        input_ifmap = 0;
-        input_filter = 0;
-        input_psum = 0;
-
-        // Reset system
+        // Hold reset for a few cycles
         #10;
         rst = 0;
 
-        // Write ifmap[0] = 3
-        wr_en_ifmap = 1;
-        input_ifmap = 16'd3;
-        addr_ifmap = 4'd0;
+        // Apply 3 input values
+        psum_in = 16'd10;
         #10;
-        wr_en_ifmap = 0;
-
-        // Write filter[0] = 2
-        wr_en_filter = 1;
-        input_filter = 16'd2;
-        addr_filter = 8'd0;
+        psum_in = 16'd20;
         #10;
-        wr_en_filter = 0;
-
-        // Write psum[0] = 10
-        wr_en_psum = 1;
-        input_psum = 16'd10;
-        addr_psum = 5'd0;
+        psum_in = 16'd30;
         #10;
-        wr_en_psum = 0;
 
-        // Run PE: compute 3 * 2 + 10 = 16
-        en = 1;
+        // After 3rd input, expect output = 10 + 20 + 30 = 60
+        $display("Accumulated Output: %d", accum_out);
+
+        // Apply more values to test rolling behavior if needed
+        psum_in = 16'd5;
         #10;
-        en = 0;
-
-        // Wait for result
+        psum_in = 16'd15;
         #10;
-        $display("Output Psum = %d", output_psum);
-        if (output_psum == 16'd16)
-            $display(" TEST PASSED");
-        else
-            $display(" TEST FAILED");
+        psum_in = 16'd25;
+        #10;
+        $display("Accumulated Output: %d", accum_out);
 
+        // End simulation
         $finish;
     end
 
