@@ -1,0 +1,68 @@
+`timescale 1ps / 1ps
+`include "pe_3x3.v"
+
+module tb_pe_array_3x3;
+
+    // Clock, enable, reset
+    reg clk;
+    reg en;
+    reg rst;
+
+    // Flattened inputs and output
+    reg  [399:0] ifmap_in_flat;   // 25 x 16-bit
+    reg  [143:0] filter_in_flat;  // 9 x 16-bit
+    wire [143:0] sum_out_flat;    // 9 x 16-bit
+
+    // Instantiate the DUT
+    pe_array_3x3 uut (
+        .clk(clk),
+        .en(en),
+        .rst(rst),
+        .ifmap_in_flat(ifmap_in_flat),
+        .filter_in_flat(filter_in_flat),
+        .sum_out_flat(sum_out_flat)
+    );
+
+    // Clock generation: 10ns period
+    always #5 clk = ~clk;
+
+    
+    integer i;
+    
+    initial begin
+        $dumpfile("test_arr.vcd"); 
+        $dumpvars(0, tb_pe_array_3x3);
+        // Initialize signals
+        clk = 0;
+        en = 0;
+        rst = 1;
+
+        //#10;
+
+        en = 1;
+        
+        // Initialize ifmap (25 x 16-bit = 400-bit)
+        for (i = 0; i < 25; i = i + 1) begin
+            ifmap_in_flat[i*16 +: 16] = i + 1; // [1..25]
+        end
+        
+        // Initialize filter (9 x 16-bit = 144-bit)
+        for (i = 0; i < 9; i = i + 1) begin
+            filter_in_flat[i*16 +: 16] = 16'd1; // Filter = 1s
+        end
+        
+        #10;
+        rst = 0;
+        // Run for 50 cycles to collect results
+        #100;
+
+        // Stop simulation
+        $finish;
+    end
+
+    // Optional: Monitor output
+    always @(posedge clk) begin
+        $display("Time = %t | sum_out_flat = %h", $time, sum_out_flat);
+    end
+
+endmodule

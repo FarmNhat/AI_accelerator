@@ -7,7 +7,7 @@ module pe (
     input  wire        rst,
     input  wire        en,
     input reg [15:0] input_ifmap,   // external input ifmap (optional override)
-    input wire [15:0] input_filter,  // external input filter (optional override)
+    input reg [15:0] input_filter,  // external input filter (optional override)
     output wire [15:0] output_psum     // final output psum
 );
 
@@ -15,7 +15,7 @@ module pe (
     wire [15:0] acc_result;
 
     assign mult_result = rst ? 32'd0 : input_ifmap * input_filter; // Multiplication result
-    assign output_psum = en ? acc_result : 16'd0;
+    //assign output_psum = en ? acc_result : 16'd0;
 
     psum_acc psum_acc_inst (
         .clk(clk),
