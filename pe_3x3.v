@@ -7,7 +7,15 @@ module pe_array_3x3 (
     input  wire        rst,
     input  reg [399:0] ifmap_in_flat ,
     input  reg [143:0] filter_in_flat ,
-    output reg [143:0] sum_out_flat 
+    output reg [143:0] sum_out_flat, 
+    //for test
+    output wire [15:0] psum_test0, // 9 phần tử psum_out
+    output wire [15:0] psum_test1,
+    output wire [15:0] psum_test2,
+
+    output wire [15:0] sum_test0, // 9 phần tử psum_out
+    output wire [15:0] sum_test1,
+    output wire [15:0] sum_test2
 );
 
 reg [15:0] ifmap_in[24:0]; // 5x5 = 25 phần tử
@@ -22,14 +30,26 @@ always @(posedge clk) begin
             ifmap_in[k] <= ifmap_in_flat[k * 16 +: 16];
         for (k = 0; k < 9; k = k + 1)
             filter_in[k] <= filter_in_flat[k * 16 +: 16];
+    end
+    else begin
         for (k = 0; k < 9; k = k + 1) 
-            sum_out_flat[k*16 +: 16] = sum_out[k];
+            sum_out_flat[k*16 +: 16] <= sum_out[k];
     end 
+    //$display("psum[0] = %h", psum[0]);
+
 end
 
 reg [15:0] temp_ifmap[2:0][2:0]; // psum_out của từng PE
 reg [15:0] temp_filter[2:0][2:0];
 wire [15:0] psum_temp[2:0]; // psum của từng PE
+
+assign sum_test0 = sum_out[0];
+assign sum_test1 = sum_out[1];
+assign sum_test2 = sum_out[2];
+
+assign psum_test0 = psum_temp[0];
+assign psum_test1 = psum_temp[1];
+assign psum_test2 = psum_temp[2];
 
 reg [2:0] cnt;
 
@@ -39,7 +59,6 @@ reg [2:0] cnt;
             wire [15:0] psum_row [2:0]; // Tổng psum của 3 PE trong một hàng
             for (j = 0; j < 3; j = j + 1) begin : col   //pe_array_3x3.row[1].pe ------- uut.row_block[1].col_block[2].u_pe.y
                 
-
                 pe pe (
                     .clk(clk),
                     .rst(rst),
@@ -56,21 +75,28 @@ reg [2:0] cnt;
     endgenerate
 
     always @(posedge clk)begin
-        if(rst)
+        if(rst) begin
             cnt <= 0;
-        else if(cnt == 5) 
+            //idx <= 0;
+        end
+        else if(cnt == 6) begin 
             cnt <= 0; 
+            //idx <= 0; // Reset cnt and idx when reaching the end of the ifmap
+        end
         else begin
-            if(cnt > 1) begin
-                sum_out[cnt] <= psum_temp[0];
-                sum_out[cnt + 3] <= psum_temp[1];
-                sum_out[cnt + 6] <= psum_temp[2];
-            end
             cnt <= cnt + 1;
         end
     end
 
-    
+    always @(psum_temp[0], psum_temp[1], psum_temp[2]) begin
+        if(cnt > 2)begin
+        //sum_out[0] = psum_temp[0];
+         sum_out[cnt-3] <= psum_temp[0];
+         sum_out[cnt] <= psum_temp[1];
+         sum_out[cnt+3] <= psum_temp[2];
+            //idx <= idx + 1; // Chuyển sang hàng tiếp theo
+        end
+    end
 
     integer a;
     always @(posedge clk) begin
