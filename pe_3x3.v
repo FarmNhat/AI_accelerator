@@ -14,6 +14,7 @@ reg [15:0] ifmap_in[24:0]; // 5x5 = 25 phần tử
 reg [15:0] filter_in[8:0]; // 3x3 = 9 phần tử
 reg [15:0] sum_out[8:0]; // 3x3 = 9 phần tử
 
+
 integer k;
 always @(posedge clk) begin
     if (rst) begin
@@ -21,13 +22,15 @@ always @(posedge clk) begin
             ifmap_in[k] <= ifmap_in_flat[k * 16 +: 16];
         for (k = 0; k < 9; k = k + 1)
             filter_in[k] <= filter_in_flat[k * 16 +: 16];
+        for (k = 0; k < 9; k = k + 1) 
+            sum_out_flat[k*16 +: 16] = sum_out[k];
     end 
 end
 
 reg [15:0] temp_ifmap[2:0][2:0]; // psum_out của từng PE
 reg [15:0] temp_filter[2:0][2:0];
 wire [15:0] psum_temp[2:0]; // psum của từng PE
-//reg [15:0] psum_out[2:0][2:0]; // psum_out của từng PE
+
 reg [2:0] cnt;
 
     genvar i, j;
