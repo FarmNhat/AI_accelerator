@@ -5,9 +5,9 @@ module pe_array_3x3 (
     input  wire        clk,
     input  wire        en,
     input  wire        rst,
-    input  reg [399:0] ifmap_in_flat ,
-    input  reg [143:0] filter_in_flat ,
-    output reg [143:0] sum_out_flat, 
+    input  wire [399:0] ifmap_in_flat ,
+    input  wire [143:0] filter_in_flat ,
+    output wire [143:0] sum_out_flat, 
     //for test
     output wire [15:0] psum_test0, // 9 phần tử psum_out
     output wire [15:0] psum_test1,
@@ -31,13 +31,14 @@ always @(posedge clk) begin
         for (k = 0; k < 9; k = k + 1)
             filter_in[k] <= filter_in_flat[k * 16 +: 16];
     end
-    else begin
-        for (k = 0; k < 9; k = k + 1) 
-            sum_out_flat[k*16 +: 16] <= sum_out[k];
-    end 
-    //$display("psum[0] = %h", psum[0]);
-
 end
+
+genvar m;
+    generate
+        for (m = 0; m < 9; m = m + 1) begin 
+            assign sum_out_flat[m*16 +: 16] = sum_out[m];
+        end
+    endgenerate
 
 reg [15:0] temp_ifmap[2:0][2:0]; // psum_out của từng PE
 reg [15:0] temp_filter[2:0][2:0];
