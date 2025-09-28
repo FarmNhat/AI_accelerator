@@ -8,9 +8,9 @@ module pe_array_3x3 (
     input  wire        rst,
     input  wire [199:0] ifmap_in_flat ,
     input  wire [71:0] filter_in_flat ,
-    output wire [71:0] sum_out_flat
+    output wire [71:0] sum_out_flat,
     //for test
-    //output wire [7:0] psum_test0
+    output wire [7:0] psum_test0
 
 );
 
@@ -43,7 +43,7 @@ reg [7:0] temp_ifmap[2:0][2:0]; // psum_out c?a t?ng PE
 wire [7:0] temp_filter[2:0][2:0];
 wire [7:0] psum_temp[2:0]; // psum c?a t?ng PE
 
-    assign psum_test0 = temp_filter[0][1];
+    assign psum_test0 = psum_temp[0]; // for test
     
 reg [2:0] cnt;
 
@@ -67,27 +67,40 @@ reg [2:0] cnt;
             assign psum_temp[i]  = psum_row[0] + psum_row[1] + psum_row[2]; 
         end
     endgenerate
- 
+    
+    reg [2:0] cnt_out; //đếm từ psum temp ra sum out, khi cnt = 3 thì psum temp mới có gtri
+
     always @(posedge clk)begin
         if(rst) begin
             cnt <= 0;
-            //idx <= 0;
+            //cnt_out <= 0;
         end
-        else if(cnt == 6) begin 
-            cnt <= 0; 
-            //idx <= 0; // Reset cnt and idx when reaching the end of the ifmap
+        else if(cnt == 4) begin 
+            // keep cnt = 4 for ever
         end
         else begin
             cnt <= cnt + 1;
         end
     end
 
+    always @(posedge clk)begin
+        if(cnt == 2) begin
+            cnt_out <= 0;
+        end
+        else if(cnt_out == 2) begin 
+            // keep cnt_out = 2 for ever
+        end
+        else begin
+            cnt_out <= cnt_out + 1;
+        end
+    end
+
     always @(psum_temp[0], psum_temp[1], psum_temp[2]) begin
         if(cnt > 2)begin
         //sum_out[0] = psum_temp[0];
-         sum_out[cnt-3] <= psum_temp[0];
-         sum_out[cnt] <= psum_temp[1];
-         sum_out[cnt+3] <= psum_temp[2];
+         sum_out[cnt_out] <= psum_temp[0];
+         sum_out[cnt_out+3] <= psum_temp[1];
+         sum_out[cnt_out+6] <= psum_temp[2];
             //idx <= idx + 1; // Chuy?n sang hàng ti?p theo
         end
     end
@@ -130,7 +143,7 @@ reg [2:0] cnt;
         temp_ifmap[2][2] <= ifmap_in[cnt + 20];
         end
     end
-
+    //nhìn vào cnt để nhớ lại cách hđ của row stationary
     //dò biến cnt này để biết đang ở cột nào của ifmap, vì biến cnt chạy tới x nên x là số giá trị (theo hàng) đc bỏ vào pe
 
 endmodule
