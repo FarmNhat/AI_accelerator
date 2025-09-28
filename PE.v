@@ -1,21 +1,21 @@
 // `include "ifmap.v"
 // `include "filter.v"
- //`include "psum_acc.v"
+`include "psum_acc.v"
 
 module pe (
     input  wire        clk,
     input  wire        rst,
     input  wire        en,
-    input wire [15:0] input_ifmap,   // external input ifmap (optional override)
+    input wire [7:0] input_ifmap,   // external input ifmap (optional override)
     //output wire [15:0] psum_out2,
-    input wire [15:0] input_filter,  // external input filter (optional override)
-    output wire [15:0] output_psum     // final output psum
+    input wire [7:0] input_filter,  // external input filter (optional override)
+    output wire [7:0] output_psum     // final output psum
 );
 
-    wire [31:0] mult_result;
-    wire [15:0] acc_result;
+    wire [15:0] mult_result;
+    wire [7:0] acc_result;
 
-    assign mult_result = rst ? 32'd0 : input_ifmap * input_filter; // Multiplication result
+    assign mult_result = rst ? 16'd0 : input_ifmap * input_filter; // Multiplication result
     //assign output_psum = en ? acc_result : 16'd0;
 
     psum_acc psum_acc_inst (
@@ -23,7 +23,7 @@ module pe (
         .rst(rst),
         .en(en), // Enable signal
         //.psum_out2(psum_out2), // Output for psum_out2
-        .psum_in(mult_result[15:0]), // Take lower 16 bits of multiplication result
+        .psum_in(mult_result[7:0]), // Take lower 16 bits of multiplication result
         .accum_out(output_psum)
     );
 
