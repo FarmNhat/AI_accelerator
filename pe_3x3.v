@@ -131,4 +131,6 @@ reg [2:0] cnt;
         end
     end
 
+    //dò biến cnt này để biết đang ở cột nào của ifmap, vì biến cnt chạy tới x nên x là số giá trị (theo hàng) đc bỏ vào pe
+
 endmodule
