@@ -4,8 +4,9 @@
 
 module top(
     input  wire              clk,
-    input  wire              done_serial,
-    //input  wire              start_para,
+    input  wire              done_serial1,  // =1 là chế độ đọc serial
+    input  wire              done_serial2,
+    input  wire              done_para,
     input  wire              rst,
     input  wire              en,
     input  wire [7:0]        in_ifmap,
@@ -20,7 +21,7 @@ wire [71:0]out_bus;
 serial #(.BUS(199)) serial_ifmap (
     .clk(clk),
     .rst(rst),
-    .en(done_serial),
+    .en(done_serial1),
     .in_ifmap(in_ifmap),
     .out_ifmap(ifmap_bus)
 );
@@ -28,15 +29,15 @@ serial #(.BUS(199)) serial_ifmap (
 serial #(.BUS(71)) serial_filter (
     .clk(clk),
     .rst(rst),
-    .en(done_serial),
+    .en(done_serial2),
     .in_ifmap(in_filter),
     .out_ifmap(filter_bus)
 );
 
 pe_array_3x3 pe_array (
     .clk(clk),
-    .en(~done_serial),
-    .rst(done_serial),
+    .en(~done_serial1),
+    .rst(done_serial1),
     .ifmap_in_flat(ifmap_bus),
     .filter_in_flat(filter_bus),
     .sum_out_flat(out_bus)
@@ -45,7 +46,7 @@ pe_array_3x3 pe_array (
 paralel #(.BUS(71)) out_para (
     .clk(clk),
     .rst(rst),
-    .en(done_serial),
+    .en(done_para),
     .in_ifmap(out_bus),
     .out_ifmap(out)
 );
