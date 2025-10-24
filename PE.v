@@ -2,7 +2,9 @@
 // `include "filter.v"
 `include "psum_acc.v"
 
-module pe (
+module pe #(
+    parameter ACC_NUM=3
+)(
     input  wire        clk,
     input  wire        rst,
     input  wire        en,
@@ -18,7 +20,7 @@ module pe (
     assign mult_result = rst ? 16'd0 : input_ifmap * input_filter; // Multiplication result
     //assign output_psum = en ? acc_result : 16'd0;
 
-    psum_acc psum_acc_inst (
+    psum_acc #(.ACC_NUM(ACC_NUM)) psum_acc_inst (
         .clk(clk),
         .rst(rst),
         .en(en), // Enable signal

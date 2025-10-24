@@ -10,14 +10,22 @@ module paralel #(
 
     // Thanh ghi đệm dữ liệu
     reg [BUS:0] buffer;
-    
-    always @(posedge clk or posedge rst) begin
+    reg [2:0] cnt;
+    always @(posedge clk or posedge en) begin
         if (rst) begin
-            buffer    <= in_ifmap;
-        end else if (en) begin
-            out_ifmap <= buffer[7:0];
-            buffer <= buffer >> 8;
-        end
+            cnt <= 0;
+            out_ifmap <= 0;
+        end 
+        else if (en) begin
+            cnt <= 1;
+            if(cnt == 0)begin
+                buffer <= in_ifmap;
+            end
+            else begin
+                out_ifmap <= buffer[7:0];
+                buffer <= buffer >> 8;
+            end
+        end 
     end
     
     //assign out_ifmap = buffer[7:0];
